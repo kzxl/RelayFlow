@@ -1,0 +1,25 @@
+<Project>
+
+  <!--
+    Shared build settings for every project in the RelayFlow repository.
+    Keep conservative: must be valid for the library, tests, and sample app.
+  -->
+  <PropertyGroup>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+
+    <Company>RelayFlow</Company>
+    <Copyright>Copyright (c) 2026</Copyright>
+    <PackageProjectUrl>https://github.com/relayflow/relayflow</PackageProjectUrl>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsPackable)' != 'false'">
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+  </PropertyGroup>
+
+</Project>

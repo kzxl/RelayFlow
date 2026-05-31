@@ -1,0 +1,30 @@
+# Logs
+*.log
+
+# Build output
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# Test results
+[Tt]est[Rr]esults/
+*.trx
+*.coverage
+coverage*.json
+coverage*.xml
