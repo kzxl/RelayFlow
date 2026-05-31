@@ -8,7 +8,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
     <PackageId>RelayFlow</PackageId>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <Authors>RelayFlow</Authors>
     <Description>A lightweight, code-first request-relaying library for ASP.NET Core. Forward selected endpoints from an edge API to an internal API after applying your own authentication and authorization, with secure defaults: SSRF allow-listing, spoofed-header stripping, and edge credential swapping. Wraps YARP's IHttpForwarder for correct streaming, hop-by-hop handling, and cancellation.</Description>
     <PackageTags>aspnetcore;reverse-proxy;forwarder;api-gateway;yarp;relay;bff;edge;authentication</PackageTags>

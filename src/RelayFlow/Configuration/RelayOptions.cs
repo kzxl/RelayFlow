@@ -1,4 +1,5 @@
 using System;
+using RelayFlow.Resilience;
 using RelayFlow.Security;
 
 namespace RelayFlow.Configuration
@@ -14,6 +15,12 @@ namespace RelayFlow.Configuration
         /// origin or every relay will be rejected. This is intentional.
         /// </summary>
         public DestinationPolicy Destinations { get; } = new DestinationPolicy();
+
+        /// <summary>
+        /// Per-destination circuit breaker settings. When tripped, the relay fails fast with
+        /// <c>503 Service Unavailable</c> instead of piling requests onto a failing internal API.
+        /// </summary>
+        public CircuitBreakerOptions CircuitBreaker { get; } = new CircuitBreakerOptions();
 
         /// <summary>
         /// Default upstream request timeout when a route does not specify one. Defaults to 100s

@@ -121,6 +121,24 @@ namespace RelayFlow.Tests
             Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
         }
 
+        [Fact]
+        public async Task CircuitBreaker_TripsAfterFailures_ThenFailsFastWith503()
+        {
+            var client = AuthedClient();
+
+            // The internal endpoint always returns 500. The breaker threshold is 2, so the
+            // first two requests forward (and get 500), then the circuit opens.
+            var first = await client.GetAsync("/api/flaky");
+            Assert.Equal(HttpStatusCode.InternalServerError, first.StatusCode);
+
+            var second = await client.GetAsync("/api/flaky");
+            Assert.Equal(HttpStatusCode.InternalServerError, second.StatusCode);
+
+            // Third request should be rejected fast by the open circuit: 503, not 500.
+            var third = await client.GetAsync("/api/flaky");
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, third.StatusCode);
+        }
+
         private sealed class EchoResponse
         {
             public string Id { get; set; } = "";

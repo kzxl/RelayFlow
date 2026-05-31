@@ -2,7 +2,9 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using RelayFlow.Configuration;
+using RelayFlow.Diagnostics;
 using RelayFlow.Forwarding;
+using RelayFlow.Resilience;
 using Yarp.ReverseProxy.Forwarder;
 
 namespace RelayFlow
@@ -33,6 +35,8 @@ namespace RelayFlow
             services.TryAddSingleton(options);
             services.AddHttpForwarder(); // registers IHttpForwarder
             services.TryAddSingleton<UpstreamHttpClient>();
+            services.TryAddSingleton(sp => new CircuitBreakerRegistry(options.CircuitBreaker));
+            services.TryAddSingleton<RelayMetrics>();
             services.TryAddSingleton<RelayForwarder>();
 
             return services;

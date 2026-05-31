@@ -126,6 +126,56 @@ hand-rolled forwarders commonly make:
 > RelayFlow does not authenticate callers itself; it relies on ASP.NET Core
 > authentication/authorization that you configure and attach via `RequireAuthorization`.
 
+## Resilience: per-destination circuit breaker
+
+When an internal API starts failing, blindly forwarding every request piles load
+onto a service that is already struggling. RelayFlow trips a circuit breaker per
+destination authority (`scheme://host:port`): after a configured number of
+consecutive failures (forwarding errors or upstream `5xx`), the circuit opens and
+the relay **fails fast with `503`** without contacting the internal service. After a
+cooldown it allows a single trial request; success closes the circuit, failure
+re-opens it.
+
+```csharp
+builder.Services.AddRelayFlow(options =>
+{
+    options.Destinations.AllowOrigin("https://internal-api:5000");
+
+    options.CircuitBreaker.Enabled = true;          // default
+    options.CircuitBreaker.FailureThreshold = 5;     // consecutive failures to trip
+    options.CircuitBreaker.Cooldown = TimeSpan.FromSeconds(10);
+});
+```
+
+Upstream `4xx` responses are the caller's fault and do **not** count as failures.
+
+### Why no automatic retries?
+
+RelayFlow deliberately does not auto-retry forwarded requests. A relay streams the
+request body upstream; once streaming has begun the body cannot be safely rewound,
+and retrying non-idempotent methods (`POST`/`PATCH`) risks duplicate side effects.
+Retrying belongs at the client (idempotent calls) or behind an idempotency key, not
+blindly in a proxy. The circuit breaker provides the safe, proxy-appropriate
+resilience primitive instead.
+
+## Observability
+
+RelayFlow emits standard .NET telemetry with no extra dependency, so OpenTelemetry
+or `dotnet-counters` can collect it:
+
+- **Metrics** (meter `RelayFlow`): `relayflow.requests` (by destination + status),
+  `relayflow.rejected` (by reason: `ssrf_denied`, `circuit_open`, ...), and
+  `relayflow.duration` (ms histogram).
+- **Tracing** (activity source `RelayFlow`): one `relayflow.forward` span per request
+  with destination, method, and status-code tags.
+
+```csharp
+// OpenTelemetry wiring (example)
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(m => m.AddMeter("RelayFlow"))
+    .WithTracing(t => t.AddSource("RelayFlow"));
+```
+
 ## Fluent API
 
 | Method | Purpose |
@@ -153,9 +203,11 @@ dotnet build
 dotnet test
 ```
 
-The test suite (20 tests) covers the SSRF policy and destination resolver as units,
-and runs end-to-end relay scenarios over the sample edge app via
-`WebApplicationFactory` (token swap, claims projection, spoof-stripping, SSRF deny).
+The test suite (31 tests) covers the SSRF policy, destination resolver, and circuit
+breaker state machine as units, validates metric emission via a `MeterListener`, and
+runs end-to-end relay scenarios over the sample edge app via `WebApplicationFactory`
+(token swap, claims projection, spoof-stripping, SSRF deny, and circuit-breaker
+fail-fast).
 
 ## Sample
 

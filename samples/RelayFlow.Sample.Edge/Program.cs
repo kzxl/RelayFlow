@@ -18,6 +18,10 @@ builder.Services.AddRelayFlow(options =>
 {
     // Deny-by-default: only this internal origin may be forwarded to.
     options.Destinations.AllowOrigin("http://localhost:5099");
+
+    // Trip quickly in the sample/tests so the breaker behavior is observable.
+    options.CircuitBreaker.FailureThreshold = 2;
+    options.CircuitBreaker.Cooldown = TimeSpan.FromMilliseconds(300);
 });
 
 // The service token injected at the edge in place of the user's public token.
@@ -50,6 +54,14 @@ app.MapRelay("/api/orders/{id}", "http://localhost:5099/orders/{id}")
 app.MapRelay("/api/profile/{id}", "http://localhost:5099/orders/{id}")
    .RequireAuthorization()
    .ForwardClaims(new ClaimHeaderMapping("sub", "X-Relay-User-Id"));
+
+// Internal endpoint that always fails, to demonstrate the circuit breaker.
+app.MapGet("/always-fails", () => Results.StatusCode(StatusCodes.Status500InternalServerError));
+
+// Relay to the always-failing internal endpoint: after the threshold of upstream 5xx
+// responses, RelayFlow trips and fails fast with 503 instead of forwarding.
+app.MapRelay("/api/flaky", "http://localhost:5099/always-fails")
+   .RequireAuthorization();
 
 // Misconfigured endpoint: destination is NOT on the allow-list, so RelayFlow denies it (502).
 app.MapRelay("/api/leaky/{id}", "http://evil.example.com:9999/{id}")
