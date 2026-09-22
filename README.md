@@ -1,5 +1,8 @@
 # RelayFlow
 
+> [!NOTE]
+> **AI / Agent Discovery Index**: For machine-readable capabilities, non-goals, and AST entry points, see [AGENTS.md](AGENTS.md) or [llms.txt](llms.txt).
+
 A lightweight, **code-first request-relaying** library for ASP.NET Core. Forward
 selected endpoints from a public **edge API** to an **internal API** after applying
 your own authentication and authorization, swapping credentials at the boundary,

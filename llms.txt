@@ -1,0 +1,19 @@
+# RelayFlow
+
+> Lightweight, code-first request-relaying and edge authentication library for ASP.NET Core wrapping YARP IHttpForwarder.
+
+## Machine Discovery & Index
+- [Agent Index](AGENTS.md): Machine-readable capabilities, non-goals, AST entry points, and verification commands.
+- [README](README.md): Full human documentation, architecture diagrams, and fluent API guides.
+
+## Core Capabilities
+- Request forwarding with byte streaming via YARP IHttpForwarder
+- SSRF deny-by-default allow-listing
+- Edge credential swapping (ServiceToken, ApiKey, Claims projection)
+- Per-destination circuit breaker (fast 503 on consecutive upstream failures)
+- OpenTelemetry metrics and activity tracing
+
+## Explicit Non-Goals
+- NOT a standalone gateway product (not Ocelot/Envoy/Kong)
+- NO automatic retries on forwarded requests
+- NO database-driven dynamic route configuration
